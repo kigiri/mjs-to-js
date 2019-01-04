@@ -1,0 +1,20 @@
+{
+  "name": "mjs-to-js",
+  "version": "0.0.1",
+  "description": "create .js version of .mjs files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "mjs-to-js": "./mjs-to-js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-transform-react-jsx": "^7.2.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2"
+  }
+}

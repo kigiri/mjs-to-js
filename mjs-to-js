@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+
+const { transformDir } = require('./index.js')
+
+Promise.all(process.argv.slice(2).reduce(transformDir, [])).catch(console.error)
