@@ -1,13 +1,13 @@
 {
-  "name": "body-builder",
-  "version": "0.0.1",
+  "name": "schwarzy",
+  "version": "0.0.2",
   "description": "create .build.js version of .js files",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "arnold": "./arnold"
+    "schwarzy": "./schwarzy"
   },
   "keywords": [],
   "author": "",
