@@ -10,32 +10,37 @@ const readdir = async dir => {
       .map(name => resolve(dir, name))
       .map(async p => ((await fs.stat(p)).isDirectory() ? readdir(p) : p)),
   )
-  return files.reduce((a, f) => a.concat(f), []).filter(f => f.endsWith('.mjs'))
+  return files
+    .reduce((a, f) => a.concat(f), [])
+    .filter(f => f.endsWith('.mjs') || f.endsWith('.jsx'))
 }
 
-const renameMjs = path => `${path.slice(0, -4)}.js`
-const replaceMjs = ({ node }) => {
-  if (
-    node.source &&
-    node.source.value.endsWith('.mjs') &&
-    node.source.value.startsWith('.')
-  ) {
-    node.source.value = renameMjs(node.source.value)
+const ext = (path, x) => `${path.slice(0, -4)}.${x}`
+const transform = opts => {
+  const handler = ({ node }) => {
+    if (
+      node.source &&
+      node.source.value.startsWith('.') &&
+      node.source.value.endsWith(opts.from)
+    ) {
+      node.source.value = ext(node.source.value, opts.to)
+    }
   }
+  return () => ({
+    name: 'transform-rename-ext',
+    visitor: {
+      ImportDeclaration: handler,
+      ExportAllDeclaration: handler,
+    },
+  })
 }
 
-const babelConfig = {
-  plugins: [
-    () => ({
-      name: 'transform-rename-mjs',
-      visitor: {
-        ImportDeclaration: replaceMjs,
-        ExportAllDeclaration: replaceMjs,
-      },
-    }),
-    '@babel/plugin-transform-react-jsx',
-    'transform-es2015-modules-commonjs',
-  ],
+const jsx2mjs = transform({ from: 'jsx', to: 'mjs' })
+const mjs2js = transform({ from: 'mjs', to: 'js' })
+
+const config = {
+  jsx: { plugins: [jsx2mjs, '@babel/plugin-transform-react-jsx'] },
+  mjs: { plugins: [mjs2js, 'transform-es2015-modules-commonjs'] },
 }
 
 const blackList = ['node_modules', '.git']
@@ -45,12 +50,15 @@ module.exports.transformDir = async (acc, path) => {
   const files = await readdir(path)
   await Promise.all(
     files.map(async path => {
-      const code = await fs.readFile(path, 'utf8')
-      return fs.writeFile(
-        renameMjs(path),
-        core.transform(code, babelConfig).code + '\n',
-        'utf8',
-      )
+      let code = await fs.readFile(path, 'utf8')
+      code = core.transform(code, config.jsx).code
+      if (path.endsWith('.jsx')) {
+        console.log('writing file', ext(path, 'mjs'))
+        await fs.writeFile(ext(path, 'mjs'), code + '\n', 'utf8')
+      }
+      code = core.transform(code, config.mjs).code
+        console.log('writing file', ext(path, 'js'))
+      return fs.writeFile(ext(path, 'js'), code + '\n', 'utf8')
     }),
   )
 }

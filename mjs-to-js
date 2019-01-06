@@ -2,4 +2,6 @@
 
 const { transformDir } = require('./index.js')
 
-Promise.all(process.argv.slice(2).reduce(transformDir, [])).catch(console.error)
+process.argv.slice(2)
+  .reduce(transformDir, Promise.resolve())
+  .catch(console.error)
