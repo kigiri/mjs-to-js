@@ -12,10 +12,10 @@ const readdir = async dir => {
   )
   return files
     .reduce((a, f) => a.concat(f), [])
-    .filter(f => f.endsWith('.mjs') || f.endsWith('.jsx'))
+    .filter(f => f.endsWith('.js') && !f.endsWith('.build.js'))
 }
 
-const ext = (path, x) => `${path.slice(0, -4)}.${x}`
+const ext = (path, x) => `${path.slice(0, -3)}.${x}`
 const transform = opts => {
   const handler = ({ node }) => {
     if (
@@ -35,13 +35,20 @@ const transform = opts => {
   })
 }
 
-const jsx2mjs = transform({ from: 'jsx', to: 'mjs' })
-const mjs2js = transform({ from: 'mjs', to: 'js' })
+// const jsx2mjs = transform({ from: 'jsx', to: 'mjs' })
+// const mjs2js = transform({ from: 'mjs', to: 'js' })
 
-const config = {
-  jsx: { plugins: [jsx2mjs, '@babel/plugin-transform-react-jsx'] },
-  mjs: { plugins: [mjs2js, 'transform-es2015-modules-commonjs'] },
+const conf = {
+  plugins: [
+    transform({ from: 'js', to: 'build.js' }),
+    '@babel/plugin-transform-react-jsx',
+    'transform-es2015-modules-commonjs',
+  ],
 }
+// const config = {
+//   jsx: { plugins: [jsx2mjs, '@babel/plugin-transform-react-jsx'] },
+//   mjs: { plugins: [mjs2js, 'transform-es2015-modules-commonjs'] },
+// }
 
 const blackList = ['node_modules', '.git']
 
@@ -51,14 +58,14 @@ module.exports.transformDir = async (acc, path) => {
   await Promise.all(
     files.map(async path => {
       let code = await fs.readFile(path, 'utf8')
-      code = core.transform(code, config.jsx).code
-      if (path.endsWith('.jsx')) {
-        console.log('writing file', ext(path, 'mjs'))
-        await fs.writeFile(ext(path, 'mjs'), code + '\n', 'utf8')
-      }
-      code = core.transform(code, config.mjs).code
-        console.log('writing file', ext(path, 'js'))
-      return fs.writeFile(ext(path, 'js'), code + '\n', 'utf8')
+//      code = core.transform(code, config.jsx).code
+//      if (path.endsWith('.jsx')) {
+//        console.log('writing file', ext(path, 'mjs'))
+//        await fs.writeFile(ext(path, 'mjs'), code + '\n', 'utf8')
+//      }
+      code = core.transform(code, conf).code
+      console.log('writing file', ext(path, 'build.js'))
+      return fs.writeFile(ext(path, 'build.js'), code + '\n', 'utf8')
     }),
   )
 }
