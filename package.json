@@ -1,13 +1,13 @@
 {
-  "name": "mjs-to-js",
-  "version": "1.0.0",
-  "description": "create .js version of .mjs files",
+  "name": "body-builder",
+  "version": "0.0.1",
+  "description": "create .build.js version of .js files",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "mjs-to-js": "./mjs-to-js"
+    "arnold": "./arnold"
   },
   "keywords": [],
   "author": "",
