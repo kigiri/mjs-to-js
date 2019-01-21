@@ -69,7 +69,7 @@ const transformFile = module.exports.transformFile = async path => {
 
 const defaultExclude = blackListTester(['node_modules', '.git'])
 const transformDir = (module.exports.transformDir = async (path, test) => {
-  const files = await readdir(path, test)
+  const files = (await readdir(path, test))
     .filter(f => f.endsWith('.js') && !f.endsWith('.build.js'))
 
   return Promise.all(files.map(transformFile))
