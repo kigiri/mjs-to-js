@@ -75,7 +75,7 @@ const transformDir = (module.exports.transformDir = async (path, test) => {
   return Promise.all(files.map(transformFile))
 })
 
-const transformAll = async (acc, path, test) => {
+const transformAll = (module.exports.transformAll = async (acc, path, test) => {
   await acc
 
   if (Array.isArray(test)) {
@@ -87,4 +87,4 @@ const transformAll = async (acc, path, test) => {
   return (await isDirectory(path))
     ? transformDir(path, test)
     : transformFile(path)
-}
+})
