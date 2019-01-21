@@ -10,7 +10,7 @@ const readdir = async (dir, test) => {
     names
       .filter(test)
       .map(name => resolve(dir, name))
-      .map(async p => isDirectory(p) ? readdir(p, test) : p),
+      .map(async p => (await isDirectory(p)) ? readdir(p, test) : p),
   )
   return files.reduce((a, f) => a.concat(f), [])
 }
