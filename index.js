@@ -2,7 +2,7 @@ const core = require('@babel/core')
 const fs = require('fs').promises
 const { resolve } = require('path')
 
-const isDirectory = async path => (await fs.stat(p)).isDirectory()
+const isDirectory = async path => (await fs.stat(path)).isDirectory()
 const blackListTester = arr => name => !arr.includes(name)
 const readdir = async (dir, test) => {
   const names = await fs.readdir(dir)
