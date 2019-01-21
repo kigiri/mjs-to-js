@@ -3,7 +3,7 @@ const fs = require('fs').promises
 const { resolve } = require('path')
 
 const isDirectory = async path => (await fs.stat(p)).isDirectory()
-const blackListTester = arr => !arr.includes(name)
+const blackListTester = arr => name => !arr.includes(name)
 const readdir = async (dir, test) => {
   const names = await fs.readdir(dir)
   const files = await Promise.all(
