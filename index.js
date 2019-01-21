@@ -2,17 +2,17 @@ const core = require('@babel/core')
 const fs = require('fs').promises
 const { resolve } = require('path')
 
-const readdir = async dir => {
+const isDirectory = async path => (await fs.stat(p)).isDirectory()
+const blackListTester = arr => !arr.includes(name)
+const readdir = async (dir, test) => {
   const names = await fs.readdir(dir)
   const files = await Promise.all(
     names
-      .filter(name => !blackList.includes(name))
+      .filter(test)
       .map(name => resolve(dir, name))
-      .map(async p => ((await fs.stat(p)).isDirectory() ? readdir(p) : p)),
+      .map(async p => isDirectory(p) ? readdir(p, test) : p),
   )
-  return files
-    .reduce((a, f) => a.concat(f), [])
-    .filter(f => f.endsWith('.js') && !f.endsWith('.build.js'))
+  return files.reduce((a, f) => a.concat(f), [])
 }
 
 const ext = (path, x) => `${path.slice(0, -3)}.${x}`
@@ -30,7 +30,9 @@ const transform = opts => {
     name: 'transform-rename-ext',
     visitor: {
       ImportDeclaration: handler,
+      ImportNamespaceSpecifier: handler,
       ExportAllDeclaration: handler,
+      ExportNamedDeclaration: handler,
     },
   })
 }
@@ -50,22 +52,39 @@ const conf = {
 //   mjs: { plugins: [mjs2js, 'transform-es2015-modules-commonjs'] },
 // }
 
-const blackList = ['node_modules', '.git']
+readdir.blackList = (dir, arr) => readdir(dir, blackListTester(arr))
+module.exports.readdir = readdir
 
-module.exports.transformDir = async (acc, path) => {
+const transformFile = module.exports.transformFile = async path => {
+  let code = await fs.readFile(path, 'utf8')
+  // code = core.transform(code, config.jsx).code
+  // if (path.endsWith('.jsx')) {
+  //   console.log('writing file', ext(path, 'mjs'))
+  //   await fs.writeFile(ext(path, 'mjs'), code + '\n', 'utf8')
+  // }
+  code = core.transform(code, conf).code
+  console.log('writing file', ext(path, 'build.js'))
+  return fs.writeFile(ext(path, 'build.js'), code + '\n', 'utf8')
+}
+
+const defaultExclude = blackListTester(['node_modules', '.git'])
+const transformDir = (module.exports.transformDir = async (path, test) => {
+  const files = await readdir(path, test)
+    .filter(f => f.endsWith('.js') && !f.endsWith('.build.js'))
+
+  return Promise.all(files.map(transformFile))
+})
+
+const transformAll = async (acc, path, test) => {
   await acc
-  const files = await readdir(path)
-  await Promise.all(
-    files.map(async path => {
-      let code = await fs.readFile(path, 'utf8')
-//      code = core.transform(code, config.jsx).code
-//      if (path.endsWith('.jsx')) {
-//        console.log('writing file', ext(path, 'mjs'))
-//        await fs.writeFile(ext(path, 'mjs'), code + '\n', 'utf8')
-//      }
-      code = core.transform(code, conf).code
-      console.log('writing file', ext(path, 'build.js'))
-      return fs.writeFile(ext(path, 'build.js'), code + '\n', 'utf8')
-    }),
-  )
+
+  if (Array.isArray(test)) {
+    test = blackListTester(test)
+  } else if (!typeof test === 'function') {
+    test = defaultExclude
+  }
+
+  return (await isDirectory(path))
+    ? transformDir(path, test)
+    : transformFile(path)
 }

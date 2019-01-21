@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const { transformDir } = require('./index.js')
+const { transformAll } = require('./index.js')
 
 process.argv.slice(2)
-  .reduce(transformDir, Promise.resolve())
+  .reduce(transformAll, Promise.resolve())
   .catch(console.error)
