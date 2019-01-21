@@ -1,6 +1,6 @@
 {
   "name": "schwarzy",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "create .build.js version of .js files",
   "main": "index.js",
   "scripts": {
