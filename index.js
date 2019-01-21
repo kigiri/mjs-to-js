@@ -80,7 +80,7 @@ const transformAll = (module.exports.transformAll = async (acc, path, test) => {
 
   if (Array.isArray(test)) {
     test = blackListTester(test)
-  } else if (!typeof test === 'function') {
+  } else if (typeof test !== 'function') {
     test = defaultExclude
   }
 
