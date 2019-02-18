@@ -10,7 +10,7 @@ const readdir = async (dir, test) => {
     names
       .filter(test)
       .map(name => resolve(dir, name))
-      .map(async p => (await isDirectory(p)) ? readdir(p, test) : p),
+      .map(async p => ((await isDirectory(p)) ? readdir(p, test) : p)),
   )
   return files.reduce((a, f) => a.concat(f), [])
 }
@@ -44,6 +44,7 @@ const conf = {
   plugins: [
     transform({ from: 'js', to: 'build.js' }),
     '@babel/plugin-transform-react-jsx',
+    '@babel/plugin-syntax-dynamic-import',
     'transform-es2015-modules-commonjs',
   ],
 }
@@ -55,7 +56,7 @@ const conf = {
 readdir.blackList = (dir, arr) => readdir(dir, blackListTester(arr))
 module.exports.readdir = readdir
 
-const transformFile = module.exports.transformFile = async path => {
+const transformFile = (module.exports.transformFile = async path => {
   let code = await fs.readFile(path, 'utf8')
   // code = core.transform(code, config.jsx).code
   // if (path.endsWith('.jsx')) {
@@ -65,12 +66,13 @@ const transformFile = module.exports.transformFile = async path => {
   code = core.transform(code, conf).code
   console.log('writing file', ext(path, 'build.js'))
   return fs.writeFile(ext(path, 'build.js'), code + '\n', 'utf8')
-}
+})
 
 const defaultExclude = blackListTester(['node_modules', '.git'])
 const transformDir = (module.exports.transformDir = async (path, test) => {
-  const files = (await readdir(path, test))
-    .filter(f => f.endsWith('.js') && !f.endsWith('.build.js'))
+  const files = (await readdir(path, test)).filter(
+    f => f.endsWith('.js') && !f.endsWith('.build.js'),
+  )
 
   return Promise.all(files.map(transformFile))
 })
